@@ -1,12 +1,22 @@
 <?php
-$pdo = new PDO(
-    'mysql:dbname=stekosPHP',
-    'root',
-    '',
-    [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-    ]
-);
+
+use App\Helpers\Config;
+
+try {
+    $pdo = new PDO(
+        "mysql:host=" . Config::get("DB_HOST") . ";port=" . (int)Config::get("DB_PORT") . ";dbname=" . Config::get("DB_DATABASE"),
+        Config::get("DB_USERNAME"),
+        Config::get("DB_PASSWORD"),
+        [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+        ]
+    );
+} catch (Exception $e) {
+    echo "Erreur: " . $e->getMessage() . "<br/>";
+    echo "N°: " . $e->getCode();
+}
+
+$env = Config::get("APP_ENV");
 
 return [
     'paths' => [
@@ -16,8 +26,9 @@ return [
     'environments' => [
         'default_database' => 'development',
         'development' => [
-            'name' => 'stekosPHP',
+            'name' => 'stekosphp',
             'connection' => $pdo
         ]
     ]
 ];
+
