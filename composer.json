@@ -1,0 +1,29 @@
+{
+    "name": "stekos/stekos-php",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "StephaneKuma",
+            "email": "kumastephane@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Core\\": "core/",
+            "App\\": "app/",
+            "Test\\": "tests/"
+        }
+    },
+    "require": {
+        "altorouter/altorouter": "^1.2",
+        "symfony/var-dumper": "^4.3",
+        "filp/whoops": "^2.5",
+        "phpunit/phpunit": "^8.3",
+        "robmorgan/phinx": "^0.11.1",
+        "fzaninotto/faker": "^1.8",
+        "vlucas/valitron": "^1.4",
+        "twig/twig": "^2.11",
+        "vlucas/phpdotenv": "^3.6"
+    }
+}
