@@ -4,58 +4,52 @@
 namespace Core;
 
 
-use AltoRouter;
+use Core\Router\Route;
+use Psr\Http\Message\ServerRequestInterface;
+use Zend\Expressive\Router\FastRouteRouter;
+use Zend\Expressive\Router\Route as ZendRoute;
 
 class Router
 {
-    /**
-     * @var string
-     */
-    private $viewPath;
-
-    /**
-     * @var AltoRouter
+    /***
+     * @var FastRouteRouter
      */
     private $router;
 
     /**
      * Router constructor.
-     * @param string $viewPath
      */
-    public function __construct(string $viewPath)
+    public function __construct()
     {
-        $this->viewPath = $viewPath;
-        $this->router = new AltoRouter();
+        $this->router = new FastRouteRouter();
     }
 
-    /**
-     * @param string $url
-     * @param string $view
-     * @param string|null $name
-     * @return Router
-     * @throws \Exception
+    /***
+     * @param string $path
+     * @param callable $callable
+     * @param string $name
      */
-    public function get(string $url, string $view, ?string $name = null) : self
+    public function get(string $path, callable $callable, string $name)
     {
-        $args = explode('.', $view);
-        $view = $args[0] . DIRECTORY_SEPARATOR . $args[1];
-        $this->router->map('GET', $url, $view, $name);
-
-        return $this;
+        $this->router->addRoute(new ZendRoute($path, $callable, ['GET'], $name));
     }
 
-    /**
-     * @return Router
+    /***
+     * @param ServerRequestInterface $request
+     * @return Route|null
      */
-    public function run() : self
+    public function match(ServerRequestInterface $request) : ?Route
     {
-        $match = $this->router->match();
-        $view = $match['target'];
-        ob_start();
-        require_once $this->viewPath . $view .'.php';
-        $content = ob_get_clean();
-        require_once $this->viewPath . DIRECTORY_SEPARATOR . "layouts" . DIRECTORY_SEPARATOR . 'master.php';
+        $result = $this->router->match($request);
 
-        return $this;
+        if ($result->isSuccess()) {
+            return new Route($result->getMatchedRouteName(), $result->getMatchedParams(), $result->getMatchedParams());
+        }
+        return null;
+    }
+
+    public function generateUri(string $string, array $params) : ?string
+    {
+        $this->router->generateUri($string, $params);
     }
 }

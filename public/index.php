@@ -1,10 +1,14 @@
 <?php
 
-use App\Helpers\Config;
-use Core\Router;
+use App\Blog\BlogModule;
+use Core\App;
+use Core\Renderer\TwigRenderer;
 use Dotenv\Dotenv;
+use GuzzleHttp\Psr7\ServerRequest;
+use function Http\Response\send;
 
 require "../vendor/autoload.php";
+define('VIEW_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR);
 
 $dotenv = Dotenv::create(dirname(__DIR__));
 $dotenv->load();
@@ -16,32 +20,14 @@ if (getenv('APP_ENV') === "development") {
     $whoops->register();
 }
 
-//$dotenv->required('DB_DATABASE')->notEmpty();
-//
-//dump(Config::get("DB_USERNAME"));
-//dump(Config::get("DB_PASSWORD"));
-//
-//try {
-//    $pdo = new PDO(
-//        "mysql:host=" . Config::get("DB_HOST") . ";port=" . (int)Config::get("DB_PORT") . ";dbname=" . Config::get("DB_DATABASE"),
-//        Config::get("DB_USERNAME"),
-//        Config::get("DB_PASSWORD"),
-//        [
-//            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-//        ]
-//    );
-//} catch (Exception $e) {
-//    echo "Erreur: " . $e->getMessage() . "<br/>";
-//    echo "N°: " . $e->getCode();
-//}
-//
-//
-//dump($pdo->query("SELECT * FROM users WHERE 1")->fetchAll());
-//dd($_SERVER);
+$renderer = new TwigRenderer(VIEW_PATH);
 
-$router = new Router(dirname(__DIR__) . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR);
+$modules = [
+    BlogModule::class
+];
 
-$router
-    ->get('/', 'post.index', 'home')
-    ->get('/post', 'post.index', 'post.index')
-    ->run();
+$app = App::getInstance($modules, compact('renderer'));
+
+$response = $app->run(ServerRequest::fromGlobals());
+
+send($response);
