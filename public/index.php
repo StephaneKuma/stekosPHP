@@ -2,13 +2,14 @@
 
 use App\Blog\BlogModule;
 use Core\App;
+use Core\Renderer\RendererInterface;
 use Core\Renderer\TwigRenderer;
+use DI\ContainerBuilder;
 use Dotenv\Dotenv;
 use GuzzleHttp\Psr7\ServerRequest;
 use function Http\Response\send;
 
 require "../vendor/autoload.php";
-define('VIEW_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR);
 
 $dotenv = Dotenv::create(dirname(__DIR__));
 $dotenv->load();
@@ -20,13 +21,22 @@ if (getenv('APP_ENV') === "development") {
     $whoops->register();
 }
 
-$renderer = new TwigRenderer(VIEW_PATH);
-
 $modules = [
     BlogModule::class
 ];
 
-$app = App::getInstance($modules, compact('renderer'));
+$builder = new ContainerBuilder();
+$builder->addDefinitions(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php');
+foreach ($modules as $module) {
+    if ($module::DEFINITIONS) {
+        $builder->addDefinitions($module::DEFINITIONS);
+    }
+}
+$container = $builder->build();
+
+
+
+$app = App::getInstance($container, $modules);
 
 $response = $app->run(ServerRequest::fromGlobals());
 
